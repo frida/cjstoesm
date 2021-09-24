@@ -14,13 +14,42 @@ import {maybeGenerateAssertClause} from "../../util/maybe-generate-assert-clause
  * Visits the given CallExpression
  */
 export function visitCallExpression({node, childContinuation, sourceFile, context}: BeforeVisitorOptions<TS.CallExpression>): TS.VisitResult<TS.Node> {
+	const {typescript, factory} = context;
+
+	if (node.expression.getText() === "Object.defineProperty") {
+		const args = node.arguments;
+		if (args.length === 3) {
+			const [obj, prop, descriptor] = args;
+			if (typescript.isIdentifier(obj) && obj.text === "module" &&
+					typescript.isStringLiteral(prop) && prop.text === "exports" &&
+					typescript.isObjectLiteralExpression(descriptor)) {
+				for (const element of descriptor.properties) {
+					if (!typescript.isPropertyAssignment(element)) {
+						continue;
+					}
+
+					const {name, initializer} = element;
+					if (!typescript.isIdentifier(name) || !typescript.isIdentifier(initializer)) {
+						continue;
+					}
+
+					if (name.text === "get") {
+						context.markDefaultAsExported();
+						context.addTrailingStatements(factory.createExportAssignment(undefined, undefined, false,
+							factory.createCallExpression(initializer, [], [])));
+						return undefined;
+					}
+				}
+			}
+		}
+	}
+
 	if (context.onlyExports) {
 		return childContinuation(node);
 	}
 
 	// Check if the node represents a require(...) call.
 	const requireData = isRequireCall(node, sourceFile, context);
-	const {typescript, factory} = context;
 
 	// If it doesn't proceed without applying any transformations
 	if (!requireData.match) {
