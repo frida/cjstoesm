@@ -1,17 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import resolve from "resolve";
 import {SafeReadonlyFileSystem} from "../../shared/file-system/file-system.js";
 import path from "crosspath";
 import {isExternalLibrary} from "./path-util.js";
-import {isRecord} from "../../shared/util/util.js";
 
 export interface ResolveOptions {
-	cwd: string;
 	id: string;
 	parent: string | null | undefined;
 	moduleDirectory?: string;
-	prioritizedPackageKeys?: string[];
 	prioritizedExtensions?: string[];
+	resolveModule?: (id: string, parent: string | null) => string;
 	resolveCache: Map<string, string | null>;
 	fileSystem: SafeReadonlyFileSystem;
 }
@@ -29,11 +26,9 @@ function computeCacheKey(id: string, parent: string | null | undefined): string 
 export function resolvePath({
 	id,
 	parent,
-	cwd,
-	prioritizedPackageKeys = ["exports", "es2015", "esm2015", "module", "jsnext:main", "main", "browser"],
 	prioritizedExtensions = ["", ".js", ".mjs", ".cjs", ".jsx", ".ts", ".mts", ".cts", ".tsx", ".json"],
-	moduleDirectory = "node_modules",
 	fileSystem,
+	resolveModule,
 	resolveCache
 }: ResolveOptions): string | undefined {
 	id = path.normalize(id);
@@ -73,49 +68,12 @@ export function resolvePath({
 	}
 
 	// Otherwise, try to resolve it via node module resolution and put it in the cache
+	if (resolveModule == null) {
+		resolveCache.set(cacheKey, null);
+		return undefined;
+	}
 	try {
-		const resolveResult = path.normalize(
-			resolve.sync(id, {
-				basedir: path.normalize(cwd),
-				extensions: prioritizedExtensions,
-				moduleDirectory: moduleDirectory,
-				readFileSync: p => fileSystem.readFileSync(p).toString(),
-				isFile: p => fileSystem.safeStatSync(p)?.isFile() ?? false,
-				isDirectory: p => fileSystem.safeStatSync(p)?.isDirectory() ?? false,
-				packageFilter(pkg: Record<string, string>): Record<string, string> {
-					let property: string | undefined | null | void;
-
-					//  Otherwise, or if no key was selected, use the prioritized list of fields and take the first matched one
-					if (property == null) {
-						const packageKeys = Object.keys(pkg);
-						property = prioritizedPackageKeys.find(key => packageKeys.includes(key));
-					}
-
-					// If a property was resolved, set the 'main' property to it (resolve will use the main property no matter what)
-					if (property != null) {
-						let pickedProperty = pkg[property];
-						while (isRecord(pickedProperty)) {
-							if ("import" in pickedProperty) {
-								pickedProperty = (pickedProperty as any).import;
-							} else if ("." in pickedProperty) {
-								pickedProperty = pickedProperty["."];
-							} else if ("default" in pickedProperty) {
-								pickedProperty = (pickedProperty as any).default;
-							} else if ("require" in pickedProperty) {
-								pickedProperty = (pickedProperty as any).require;
-							} else {
-								pickedProperty = pickedProperty[Object.keys(pickedProperty)[0]];
-							}
-						}
-
-						pkg.main = pickedProperty;
-					}
-
-					// Return the package
-					return pkg;
-				}
-			})
-		);
+		const resolveResult = resolveModule(id, parent ?? null);
 
 		// Add it to the cache
 		resolveCache.set(cacheKey, resolveResult);

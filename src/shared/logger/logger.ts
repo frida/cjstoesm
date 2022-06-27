@@ -1,15 +1,10 @@
 import {LogLevelKind} from "./log-level-kind.js";
-import color from "ansi-colors";
 import {Loggable} from "./loggable.js";
 
 /**
  * A logger that can print to the console
  */
 export class Logger implements Loggable {
-	private readonly VERBOSE_COLOR = "cyan";
-	private readonly WARNING_COLOR = "yellow";
-	private readonly DEBUG_COLOR = "magenta";
-
 	constructor(readonly logLevel: LogLevelKind) {}
 
 	/**
@@ -25,7 +20,7 @@ export class Logger implements Loggable {
 	 */
 	verbose(...messages: unknown[]): void {
 		if (this.logLevel < LogLevelKind.VERBOSE) return;
-		console.log(color[this.VERBOSE_COLOR]("[VERBOSE]"), ...messages);
+		console.log("[VERBOSE]", ...messages);
 	}
 
 	/**
@@ -33,13 +28,13 @@ export class Logger implements Loggable {
 	 */
 	debug(...messages: unknown[]): void {
 		if (this.logLevel < LogLevelKind.DEBUG) return;
-		console.log(color[this.DEBUG_COLOR]("[DEBUG]"), ...messages);
+		console.log("[DEBUG]", ...messages);
 	}
 
 	/**
 	 * Logs warning-related messages
 	 */
 	warn(...messages: unknown[]): void {
-		console.log(color[this.WARNING_COLOR](`(!)`), ...messages);
+		console.log("(!)", ...messages);
 	}
 }

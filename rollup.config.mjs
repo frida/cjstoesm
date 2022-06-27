@@ -11,8 +11,7 @@ const SHARED_OPTIONS = {
 	external: [
 		...builtinModules,
 		...Object.keys(pkg.dependencies),
-		...Object.keys(pkg.devDependencies),
-		...Object.keys(pkg.peerDependencies)
+		...Object.keys(pkg.devDependencies)
 	]
 };
 

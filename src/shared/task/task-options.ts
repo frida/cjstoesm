@@ -19,6 +19,11 @@ export interface TaskOptions {
 	cwd: string;
 
 	/**
+	 * A resolver for external module references.
+	 */
+	resolveModule?: (id: string, parent: string | null) => string;
+
+	/**
 	 * Determines how module specifiers are treated.
 	 * - external (default): CommonJS module specifiers identifying libraries or built-in modules are preserved (default)
 	 * - internal: CommonJS module specifiers identifying anything else than libraries or built-in modules are preserved
