@@ -1,4 +1,4 @@
-import path from "crosspath";
+import path from "@frida/crosspath";
 import {TestContext} from "./test-context.js";
 import {ensureArray, generateRandomPath} from "../../src/shared/util/util.js";
 import {MaybeArray} from "helpertypes";

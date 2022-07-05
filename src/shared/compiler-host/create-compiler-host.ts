@@ -1,6 +1,6 @@
 import {FileSystem} from "../file-system/file-system.js";
 import {TS} from "../../type/ts.js";
-import path from "crosspath";
+import path from "@frida/crosspath";
 
 export interface CreateCompilerHostOptions {
 	cwd: string;

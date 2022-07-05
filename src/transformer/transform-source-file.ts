@@ -9,7 +9,7 @@ import {ModuleExports} from "./module-exports/module-exports.js";
 import {visitImportAndExportDeclarations} from "./visitor/visit/visit-import-and-export-declarations.js";
 import {TS} from "../type/ts.js";
 import {shouldDebug} from "./util/should-debug.js";
-import path from "crosspath";
+import path from "@frida/crosspath";
 import {VisitorContext} from "./visitor-context.js";
 
 export function transformSourceFile(sourceFile: TS.SourceFile, context: VisitorContext): BeforeTransformerSourceFileStepResult {
