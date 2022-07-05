@@ -1,7 +1,7 @@
 import {visitNode} from "./visitor/visit/visit-node.js";
 import {BeforeTransformerSourceFileStepResult, BeforeVisitorContext} from "./visitor/before-visitor-context.js";
 import {BeforeVisitorOptions} from "./visitor/before-visitor-options.js";
-import {check} from "reserved-words";
+import {check} from "@frida/reserved-words";
 import {isNamedDeclaration} from "./util/is-named-declaration.js";
 import {getLocalsForBindingName} from "./util/get-locals-for-binding-name.js";
 import {shouldSkipEmit} from "./util/should-skip-emit.js";
